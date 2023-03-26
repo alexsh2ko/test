@@ -11,8 +11,11 @@ import csv
 import webbrowser
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.dispatcher import FSMContext
+<<<<<<< HEAD
 import re
 
+=======
+>>>>>>> 0882157892f22b09771a9ee47c7b005eb6eeedc9
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,8 +37,12 @@ class FAQ(StatesGroup):
     waiting_for_question = State()
 
 class Registration(StatesGroup):
+<<<<<<< HEAD
     waiting_for_first_name = State()
     waiting_for_last_name = State()
+=======
+    waiting_for_name = State()
+>>>>>>> 0882157892f22b09771a9ee47c7b005eb6eeedc9
     waiting_for_dob = State()
     waiting_for_email = State()
     waiting_for_phone = State()
@@ -63,8 +70,13 @@ async def welcome(message: types.Message):
     """
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     faq_button = KeyboardButton('FAQ')
+<<<<<<< HEAD
     register_button = KeyboardButton('Реєстрація')
     website_button = KeyboardButton('Відвідати веб-сайт')
+=======
+    register_button = KeyboardButton('Register')
+    website_button = KeyboardButton('Visit Website')
+>>>>>>> 0882157892f22b09771a9ee47c7b005eb6eeedc9
     keyboard.add(faq_button, register_button, website_button)
 
     # Create the inline keyboard with the Start button
@@ -72,10 +84,14 @@ async def welcome(message: types.Message):
     inline_keyboard = InlineKeyboardMarkup().add(start_button)
 
     # Send the welcome message with both keyboards
+<<<<<<< HEAD
     await message.answer(f"Вітаємо у UWC Ukraine (United World Colleges) – "
                          f"це глобальна освітня програма, що робить освіту силою,"
                          f" яка об’єднує людей, нації та культури заради всесвітнього"
                          f" миру та стабільного майбутнього.\n\nЧим я можу допомогти?", reply_markup=keyboard)
+=======
+    await message.answer("Вітаємо у UWC Ukraine!\nWhat can I do for you?", reply_markup=keyboard)
+>>>>>>> 0882157892f22b09771a9ee47c7b005eb6eeedc9
 
 
 @dp.callback_query_handler(lambda c: c.data == 'start')
@@ -93,6 +109,7 @@ async def visit_website(message: types.Message):
     # Open website using the user's default web browser
     webbrowser.open(WEBSITE_URL, new=2)
 
+<<<<<<< HEAD
 name_pattern = r'^[a-zA-Zа-яА-Я]+(([\'\,\.\- ][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$'
 dob_pattern = r'^\d{2}/\d{2}/\d{4}$'
 email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -112,12 +129,29 @@ registration_keyboard = ReplyKeyboardMarkup(
         ],
         [
             KeyboardButton("Номер телефона")
+=======
+registration_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton("First Name"),
+            KeyboardButton("Last Name")
+        ],
+        [
+            KeyboardButton("Date of Birth")
+        ],
+        [
+            KeyboardButton("Email Address")
+        ],
+        [
+            KeyboardButton("Phone Number")
+>>>>>>> 0882157892f22b09771a9ee47c7b005eb6eeedc9
         ]
     ],
     resize_keyboard=True
 )
 
 # Handle the registration button
+<<<<<<< HEAD
 @dp.message_handler(Text(equals='Реєстрація'))
 async def register(message: types.Message):
     # Ask for the user's first name
@@ -152,12 +186,29 @@ async def process_last_name(message: types.Message, state: FSMContext):
 
         # Ask for the user's date of birth
         await message.answer("Будь ласка, введіть дату вашого народження (ДД/ММ/РР):")
+=======
+@dp.message_handler(Text(equals='Register'))
+async def register(message: types.Message):
+    # Ask for the user's first and last name
+    await message.answer("Please enter your first and last name:")
+    await Registration.waiting_for_name.set()
+
+# Handle the user's name
+@dp.message_handler(state=Registration.waiting_for_name)
+async def process_name(message: types.Message, state: FSMContext):
+    async with state.proxy() as data: 
+        data['name'] = message.text
+
+        # Ask for the user's date of birth
+        await message.answer("Please enter your date of birth (DD/MM/YYYY):")
+>>>>>>> 0882157892f22b09771a9ee47c7b005eb6eeedc9
         await Registration.waiting_for_dob.set()
 
 # Handle the user's date of birth
 @dp.message_handler(state=Registration.waiting_for_dob)
 async def process_dob(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
+<<<<<<< HEAD
         # Validate the user's date of birth
         if not re.match(dob_pattern, message.text):
             await message.answer("Невірне введення. Будь ласка введіть коректно дату вашого народження (ДД/ММ/РР):")
@@ -167,12 +218,19 @@ async def process_dob(message: types.Message, state: FSMContext):
 
         # Ask for the user's email address
         await message.answer("Будь ласка, введіть вашу email адресу:")
+=======
+        data['dob'] = message.text
+
+        # Ask for the user's email address
+        await message.answer("Please enter your email address:")
+>>>>>>> 0882157892f22b09771a9ee47c7b005eb6eeedc9
         await Registration.waiting_for_email.set()
 
 # Handle the user's email address
 @dp.message_handler(state=Registration.waiting_for_email)
 async def process_email(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
+<<<<<<< HEAD
         # Validate the user's email address
         if not re.match(email_pattern, message.text):
             await message.answer("Невірне введення. Будь ласка введіть коректно email адресу:")
@@ -217,6 +275,28 @@ async def process_email(message: types.Message, state: FSMContext):
             await state.finish()
 
 
+=======
+        data['email'] = message.text
+
+        # Ask for the user's phone number
+        await message.answer("Please enter your phone number:")
+        await Registration.waiting_for_phone.set()
+
+# Handle the user's phone number
+@dp.message_handler(state=Registration.waiting_for_phone)
+async def process_phone(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['phone'] = message.text
+
+        # Save the user's data to the CSV file
+        with open(CSV_FILE, 'a', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([data['name'], data['dob'], data['email'], data['phone']])
+
+        # End the conversation
+        await message.answer("Thank you for registering!")
+        await state.finish()
+>>>>>>> 0882157892f22b09771a9ee47c7b005eb6eeedc9
 
 
 
