@@ -41,7 +41,7 @@ class Registration(StatesGroup):
     waiting_for_phone = State()
 
 
-FAQ_FILE = r"C:\Users\user\Desktop\test_bot\faq.csv"
+FAQ_FILE = "faq.csv"
 def read_faq():
     with open(FAQ_FILE, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
