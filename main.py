@@ -1,17 +1,23 @@
-from aiogram import Bot, Dispatcher
 import logging
-import aiogram.types as types
-from aiogram.utils import executor
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-import asyncio
 import csv
 import webbrowser
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.dispatcher import FSMContext
 import re
+import asyncio
+
+from aiogram import Bot, Dispatcher, types
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Text
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    ParseMode,
+)
+
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.utils import executor
 
 
 logging.basicConfig(level=logging.INFO)
@@ -19,17 +25,19 @@ logging.basicConfig(level=logging.INFO)
 API_TOKEN = '6286601698:AAFyd7gUZ2uGTK3GM3QESYXn5rg3At388uw'
 ADMIN_CHAT_ID = '1016729616'
 CSV_FILE = 'user_data.csv'
+FAQ_FILE = "faq.csv"
+WEBSITE_URL = 'https://www.ukraine.uwc.org'
 
-
+# Initialize the event loop and the bot
 loop = asyncio.get_event_loop()
-asyncio.set_event_loop(loop)
-bot = Bot(token=API_TOKEN, parse_mode=types.ParseMode.HTML)
+bot = Bot(token=API_TOKEN, parse_mode=ParseMode.HTML)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage, loop=loop)
 
 
 class FAQ(StatesGroup):
     waiting_for_question = State()
+
 
 class Registration(StatesGroup):
     waiting_for_first_name = State()
@@ -39,26 +47,22 @@ class Registration(StatesGroup):
     waiting_for_phone = State()
 
 
-FAQ_FILE = "faq.csv"
 def read_faq():
     with open(FAQ_FILE, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
-        faq = {}
-        for row in reader:
-            faq[row[0]] = row[1]
-        return faq
+        faq = {row[0]: row[1] for row in reader}
+    return faq
+
 
 def write_faq(faq):
     with open(FAQ_FILE, 'w', encoding='utf-8', newline='') as f:
         writer = csv.writer(f)
-        for q, a in faq.items():
-            writer.writerow([q, a])
+        writer.writerows(faq.items())
 
+
+# Handle the /start and /menu commands
 @dp.message_handler(commands=['start', 'menu'])
 async def welcome(message: types.Message):
-    """
-    This handler will be called when user sends /start command or taps on the Start button
-    """
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     faq_button = KeyboardButton('FAQ')
     register_button = KeyboardButton('Реєстрація')
@@ -70,19 +74,20 @@ async def welcome(message: types.Message):
     inline_keyboard = InlineKeyboardMarkup().add(start_button)
 
     # Send the welcome message with both keyboards
-    await message.answer(f"Вітаємо у UWC Ukraine (United World Colleges) – "
-                         f"це глобальна освітня програма, що робить освіту силою,"
-                         f" яка об’єднує людей, нації та культури заради всесвітнього"
-                         f" миру та стабільного майбутнього.\n\nЧим я можу допомогти?", reply_markup=keyboard)
+    await message.answer(
+        "Вітаємо у UWC Ukraine (United World Colleges) – це глобальна освітня програма, що робить освіту силою, "
+        "яка об’єднує людей, нації та культури заради всесвітнього миру та стабільного майбутнього.\n"
+        "\nЧим я можу допомогти?",
+        reply_markup=inline_keyboard,
+    )
 
 
+# Handle the Start button
 @dp.callback_query_handler(lambda c: c.data == 'start')
 async def process_start_command(callback_query: types.CallbackQuery):
     await welcome(callback_query.message)
     await callback_query.answer()
 
-
-WEBSITE_URL = 'https://www.ukraine.uwc.org'
 
 @dp.message_handler(Text(equals='Відвідати веб-сайт'))
 async def visit_website(message: types.Message):
@@ -117,15 +122,15 @@ registration_keyboard = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# Handle the registration button
-@dp.message_handler(Text(equals='Реєстрація'))
+
+@dp.message_handler(Text(equals='Реєстрація'))  # Handle the registration button
 async def register(message: types.Message):
     # Ask for the user's first name
     await message.answer("Будь ласка введіть ваше ім'я:")
     await Registration.waiting_for_first_name.set()
 
-# Handle the user's first name
-@dp.message_handler(state=Registration.waiting_for_first_name)
+
+@dp.message_handler(state=Registration.waiting_for_first_name)  # Handle the user's first name
 async def process_first_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         # Validate the user's first name
@@ -139,8 +144,8 @@ async def process_first_name(message: types.Message, state: FSMContext):
         await message.answer("Будь ласка введіть ваше прізвище:")
         await Registration.waiting_for_last_name.set()
 
-# Handle the user's last name
-@dp.message_handler(state=Registration.waiting_for_last_name)
+
+@dp.message_handler(state=Registration.waiting_for_last_name)  # Handle the user's last name
 async def process_last_name(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         # Validate the user's last name
@@ -154,8 +159,8 @@ async def process_last_name(message: types.Message, state: FSMContext):
         await message.answer("Будь ласка, введіть дату вашого народження (ДД/ММ/РР):")
         await Registration.waiting_for_dob.set()
 
-# Handle the user's date of birth
-@dp.message_handler(state=Registration.waiting_for_dob)
+
+@dp.message_handler(state=Registration.waiting_for_dob)  # Handle the user's date of birth
 async def process_dob(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         # Validate the user's date of birth
@@ -169,8 +174,8 @@ async def process_dob(message: types.Message, state: FSMContext):
         await message.answer("Будь ласка, введіть вашу email адресу:")
         await Registration.waiting_for_email.set()
 
-# Handle the user's email address
-@dp.message_handler(state=Registration.waiting_for_email)
+
+@dp.message_handler(state=Registration.waiting_for_email)  # Handle the user's email address
 async def process_email(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         # Validate the user's email address
@@ -217,32 +222,14 @@ async def process_email(message: types.Message, state: FSMContext):
             await state.finish()
 
 
-
-
-
 @dp.message_handler(lambda message: message.text == 'FAQ')
 async def faq_message(message: types.Message):
     faq = read_faq()
     keyboard = types.InlineKeyboardMarkup()
     for q in faq.keys():
         keyboard.add(types.InlineKeyboardButton(q, callback_data=q))
-    await message.answer('Here are some frequently asked questions:', reply_markup=keyboard)
+    await message.answer('Ось кілька поширених запитань:', reply_markup=keyboard)
 
-@dp.callback_query_handler(lambda c: c.data in read_faq().keys())
-async def faq_callback(callback_query: types.CallbackQuery):
-    faq = read_faq()
-    answer = faq[callback_query.data]
-    await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, answer)
-
-
-@dp.message_handler(lambda message: message.text == 'FAQ')
-async def faq_message(message: types.Message):
-    faq = read_faq()
-    keyboard = types.InlineKeyboardMarkup()
-    for q in faq.keys():
-        keyboard.add(types.InlineKeyboardButton(q, callback_data=q))
-    await message.answer('Here are some frequently asked questions:', reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data in read_faq().keys())
 async def faq_callback(callback_query: types.CallbackQuery):
