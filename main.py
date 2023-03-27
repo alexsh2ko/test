@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO)
 
 API_TOKEN = '6286601698:AAFyd7gUZ2uGTK3GM3QESYXn5rg3At388uw'
 ADMIN_CHAT_ID = '1016729616'
-CSV_FILE = r'C:\Users\user\Desktop\test_bot\user_data.csv'
+CSV_FILE = 'user_data.csv'
 
 # Enter your website URL here
 WEBSITE_URL = 'https://www.ukraine.uwc.org'
