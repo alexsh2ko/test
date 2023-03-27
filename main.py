@@ -1,7 +1,7 @@
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 import logging
+import aiogram.types as types
 from aiogram.utils import executor
-from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters import Text
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -20,8 +20,6 @@ API_TOKEN = '6286601698:AAFyd7gUZ2uGTK3GM3QESYXn5rg3At388uw'
 ADMIN_CHAT_ID = '1016729616'
 CSV_FILE = 'user_data.csv'
 
-# Enter your website URL here
-WEBSITE_URL = 'https://www.ukraine.uwc.org'
 
 loop = asyncio.get_event_loop()
 asyncio.set_event_loop(loop)
@@ -84,12 +82,14 @@ async def process_start_command(callback_query: types.CallbackQuery):
     await callback_query.answer()
 
 
-@dp.message_handler(Text(equals='Visit Website'))
+WEBSITE_URL = 'https://www.ukraine.uwc.org'
+
+@dp.message_handler(Text(equals='Відвідати веб-сайт'))
 async def visit_website(message: types.Message):
     """
     This handler will be called when user taps on the Visit Website button
     """
-    await message.answer(f"Opening {WEBSITE_URL}")
+    await message.answer(f"Відкрити {WEBSITE_URL}")
     # Open website using the user's default web browser
     webbrowser.open(WEBSITE_URL, new=2)
 
